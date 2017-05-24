@@ -23,6 +23,9 @@ unsigned long toc(){
 
 int main(void)
 {
+	ti.tv_sec = 0;
+	ti.tv_usec = 0;
+
 	// Set RGB-D camera device
 	cv::VideoCapture dev;
 
@@ -35,7 +38,6 @@ int main(void)
 	}
 	dev.set( CV_CAP_PROP_OPENNI_REGISTRATION, 1 );
 	dev.set( CV_CAP_OPENNI_IMAGE_GENERATOR_OUTPUT_MODE, CV_CAP_OPENNI_VGA_30HZ );
-
 
 	// Get RGB-D camera properties
 	double mDepthFrameWidth = dev.get( CV_CAP_PROP_FRAME_WIDTH );
@@ -98,7 +100,6 @@ int main(void)
 
 	int image_counter = 1;
 	unsigned long time;
-	tic();
 	while (true) {
 		// Wait for new frame data
 		dev.grab();
@@ -122,7 +123,7 @@ int main(void)
 		// Save current images
 		if (toSave) {
 			char image_index[255];
-			sprintf(image_index, "%010ld.png", time);
+			sprintf(image_index, "%016ld.png", time);
 			std::string image_file_name;
 
 			image_file_name = folder_name_depth + image_index;
