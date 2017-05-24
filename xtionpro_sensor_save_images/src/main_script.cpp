@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
+#include <sys/time.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -10,11 +12,20 @@
 bool toVisualize = true;
 bool toSave = true;
 
+struct timeval ti, tf;
+void tic(){
+	gettimeofday(&ti, NULL);
+}
+unsigned long toc(){
+	gettimeofday(&tf, NULL);
+	return (tf.tv_sec-ti.tv_sec)*1e6 + tf.tv_usec-ti.tv_usec;
+}
 
 int main(void)
 {
 	// Set RGB-D camera device
 	cv::VideoCapture dev;
+
 	dev.open( CV_CAP_OPENNI_ASUS );
 	if( !dev.isOpened() ) {
 		printf("\n\nCannot find the RGBD camera. \n");
@@ -86,9 +97,12 @@ int main(void)
 	depth_log << "# timestamp filename" << std::endl;
 
 	int image_counter = 1;
+	unsigned long time;
+	tic();
 	while (true) {
 		// Wait for new frame data
 		dev.grab();
+		time = toc();
 
 		// Retrieve our images
 		cv::Mat depth_image, color_image;
@@ -108,7 +122,7 @@ int main(void)
 		// Save current images
 		if (toSave) {
 			char image_index[255];
-			sprintf(image_index, "%010d.png", image_counter);
+			sprintf(image_index, "%010ld.png", time);
 			std::string image_file_name;
 
 			image_file_name = folder_name_depth + image_index;
