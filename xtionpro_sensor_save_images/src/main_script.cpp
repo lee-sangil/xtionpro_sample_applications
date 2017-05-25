@@ -21,12 +21,16 @@ unsigned long toc(){
 	return (tf.tv_sec-ti.tv_sec)*1e6 + tf.tv_usec-ti.tv_usec;
 }
 
-int main(void)
+int main(int argc, char * argv[])
 {
+	if( argc == 2 )
+		toVisualize = (strcmp(argv[1],"1")==0);
+
 	ti.tv_sec = 0;
 	ti.tv_usec = 0;
 
 	// Set RGB-D camera device
+	system("killall XnSensorServer");
 	cv::VideoCapture dev;
 
 	dev.open( CV_CAP_OPENNI_ASUS );
@@ -79,6 +83,12 @@ int main(void)
 	std::string folder_name_depth = "images/depth/";
 	std::string folder_name_rgb = "images/rgb/";
 
+	std::string folder_remove_command;
+	folder_remove_command = "rm -rf " + folder_name_depth;
+	system(folder_remove_command.c_str());
+	folder_remove_command = "rm -rf " + folder_name_rgb;
+	system(folder_remove_command.c_str());
+
 	std::string folder_create_command;
 	folder_create_command = "mkdir -p " + folder_name_depth;
 	system(folder_create_command.c_str());
@@ -87,8 +97,8 @@ int main(void)
 
 	// Make rgb and depth filename log
 	std::ofstream rgb_log, depth_log;
-	rgb_log.open("log/rgb.txt");
-	depth_log.open("log/depth.txt");
+	rgb_log.open("images/rgb.txt");
+	depth_log.open("images/depth.txt");
 
 	rgb_log << "# color images" << std::endl;
 	rgb_log << "# file" << std::endl;
@@ -98,15 +108,18 @@ int main(void)
 	depth_log << "# file" << std::endl;
 	depth_log << "# timestamp filename" << std::endl;
 
-	int image_counter = 1;
+	//
 	unsigned long time;
+	cv::Mat depth_image, color_image;
+	char image_index[255];
+	std::string image_file_name;
+
 	while (true) {
 		// Wait for new frame data
 		dev.grab();
 		time = toc();
 
 		// Retrieve our images
-		cv::Mat depth_image, color_image;
 		dev.retrieve(depth_image, CV_CAP_OPENNI_DEPTH_MAP);
 		dev.retrieve(color_image, CV_CAP_OPENNI_BGR_IMAGE);
 
@@ -122,26 +135,24 @@ int main(void)
 
 		// Save current images
 		if (toSave) {
-			char image_index[255];
-			sprintf(image_index, "%016ld.png", time);
-			std::string image_file_name;
+			sprintf(image_index, "%016ld", time);
 
-			image_file_name = folder_name_depth + image_index;
-			cv::imwrite(image_file_name, depth_image);  std::cout << image_file_name << std::endl;
+			image_file_name = folder_name_depth + image_index + ".png";
+			cv::imwrite(image_file_name, depth_image);  
+			std::cout << image_file_name << std::endl;
 
-			image_file_name = folder_name_rgb + image_index;
-			cv::imwrite(image_file_name, color_image);  std::cout << image_file_name << std::endl;
+			image_file_name = folder_name_rgb + image_index + ".png";
+			cv::imwrite(image_file_name, color_image);  
+			std::cout << image_file_name << std::endl;
 
 			rgb_log << image_index << " rgb/" << image_index << ".png" << std::endl;
 			depth_log << image_index << " depth/" << image_index << ".png" << std::endl;
 		}
 
     // Close this prgoram
-		if(cv::waitKey(30) == 'q') {
+		if(cv::waitKey(5) == 'q') {
 			break;
 		}
-
-		image_counter++;
 	}
 
 
