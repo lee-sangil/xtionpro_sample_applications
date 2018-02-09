@@ -30,15 +30,18 @@ int main(int argc, char * argv[])
 	ti.tv_usec = 0;
 
 	// Set RGB-D camera device
-	system("killall XnSensorServer");
-	cv::VideoCapture dev;
+	if( system("killall XnSensorServer") == -1 ){
+		std::cout << "Cannot kill XnSensorServer" << std::endl;
+		return 1;
+	}
 
+	cv::VideoCapture dev;
 	dev.open( CV_CAP_OPENNI_ASUS );
 	if( !dev.isOpened() ) {
 		printf("\n\nCannot find the RGBD camera. \n");
 		printf("Finish This Program. Thank you!! \n\n");
 		dev.release();
-		return -1;
+		return 1;
 	}
 	dev.set( CV_CAP_PROP_OPENNI_REGISTRATION, 1 );
 	dev.set( CV_CAP_OPENNI_IMAGE_GENERATOR_OUTPUT_MODE, CV_CAP_OPENNI_VGA_30HZ );
@@ -75,7 +78,7 @@ int main(int argc, char * argv[])
 	else {
 		std::cout << "\nDevice doesn't contain RGB image generator." << std::endl;
 		dev.release();
-		return -1;
+		return 1;
 	}
 
 

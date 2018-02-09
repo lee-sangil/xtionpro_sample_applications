@@ -7,7 +7,7 @@ SET(Boost_USE_MULTITHREADED ON)
 
 
 # Add plain cmake packages
-FIND_PACKAGE(OpenCV REQUIRED core highgui imgproc video)
+FIND_PACKAGE(OpenCV 2.4.13.3 REQUIRED core highgui imgproc video)
 FIND_PACKAGE(Boost COMPONENTS system filesystem thread REQUIRED)
 
 
@@ -35,7 +35,7 @@ LIST(APPEND SOURCEFILES
 set(CMAKE_CXX_FLAGS "-msse3")
 set(CMAKE_BUILD_TYPE Release) # Release, RelWithDebInfo
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -Ofast -flto -march=native")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64 -O2 -flto -march=native")
 
 
 ################################################################################
