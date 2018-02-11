@@ -9,16 +9,16 @@
 
 
 // user-defined parameters
-bool toVisualize = true;
+bool toVisualize = false;
 bool toSave = true;
 
 struct timeval ti, tf;
 void tic(){
 	gettimeofday(&ti, NULL);
 }
-unsigned long toc(){
+double toc(){
 	gettimeofday(&tf, NULL);
-	return (tf.tv_sec-ti.tv_sec)*1e6 + tf.tv_usec-ti.tv_usec;
+	return (double)(tf.tv_sec-ti.tv_sec) + (double)(tf.tv_usec-ti.tv_usec)*1e-6;
 }
 
 int main(int argc, char * argv[])
@@ -99,9 +99,10 @@ int main(int argc, char * argv[])
 	system(folder_create_command.c_str());
 
 	// Make rgb and depth filename log
-	std::ofstream rgb_log, depth_log;
+	std::ofstream rgb_log, depth_log, asc_log;
 	rgb_log.open("images/rgb.txt");
 	depth_log.open("images/depth.txt");
+	asc_log.open("images/associations.txt");
 
 	rgb_log << "# color images" << std::endl;
 	rgb_log << "# file" << std::endl;
@@ -112,7 +113,7 @@ int main(int argc, char * argv[])
 	depth_log << "# timestamp filename" << std::endl;
 
 	//
-	unsigned long time;
+	double time;
 	cv::Mat depth_image, color_image;
 	char image_index[255];
 	std::string image_file_name;
@@ -150,6 +151,7 @@ int main(int argc, char * argv[])
 
 			rgb_log << image_index << " rgb/" << image_index << ".png" << std::endl;
 			depth_log << image_index << " depth/" << image_index << ".png" << std::endl;
+			asc_log << image_index << " rgb/" << image_index << ".png " << image_index << " depth/" << image_index << ".png"; 
 		}
 
     // Close this prgoram

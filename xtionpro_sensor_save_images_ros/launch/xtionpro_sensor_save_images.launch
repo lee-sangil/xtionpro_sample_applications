@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+<arg name="args" default=""/>
+
+<include file="$(find openni2_launch)/launch/openni2.launch"/>
+<node pkg="xtionpro_sensor_save_images_ros" name="xtionpro_sensor_save_images" type="xtionpro_sensor_save_images_ros" output="screen"/>
+
+</launch>

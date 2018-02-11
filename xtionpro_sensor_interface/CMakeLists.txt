@@ -6,7 +6,7 @@ SET(OpenCV_DIR /home/icsl-rover-01/Documents/xtionpro_install/opencv-2.4.9/build
 
 
 # Add plain cmake packages
-FIND_PACKAGE(OpenCV REQUIRED core highgui imgproc video)
+FIND_PACKAGE(OpenCV 2.4.13.3 REQUIRED core highgui imgproc video)
 
 
 # Include dirs
