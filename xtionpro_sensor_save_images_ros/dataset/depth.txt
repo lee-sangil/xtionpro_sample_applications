@@ -1,3 +1,0 @@
-# depth images
-# file
-# timestamp filename

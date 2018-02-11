@@ -44,7 +44,6 @@ class Communicator{
 			system(folder_create_command.c_str());
 
 			// Make rgb and depth filename log
-			std::ofstream rgb_log, depth_log, asc_log;
 			rgb_log.open((pwd + std::string("/dataset/rgb.txt")).c_str());
 			depth_log.open((pwd + std::string("/dataset/depth.txt")).c_str());
 			asc_log.open((pwd + std::string("/dataset/associations.txt")).c_str());
@@ -104,16 +103,16 @@ void Communicator::callback(const sensor_msgs::ImageConstPtr& msg_rgb, const sen
 
 	std::string image_file_name;
 	image_file_name = folder_name_depth + time.str() + ".png";
-	cv::imwrite(image_file_name, depth);  
+	cv::imwrite(image_file_name, depth);
 	std::cout << image_file_name << std::endl;
 
 	image_file_name = folder_name_rgb + time.str() + ".png";
-	cv::imwrite(image_file_name, color);  
+	cv::imwrite(image_file_name, color);
 	std::cout << image_file_name << std::endl;
 
 	rgb_log << time.str() << " rgb/" << time.str() << ".png" << std::endl;
 	depth_log << time.str() << " depth/" << time.str() << ".png" << std::endl;
-	asc_log << time.str() << " rgb/" << time.str() << ".png " << time.str() << " depth/" << time.str() << ".png"; 
+	asc_log << time.str() << " rgb/" << time.str() << ".png " << time.str() << " depth/" << time.str() << ".png" << std::endl;
 
 }
 

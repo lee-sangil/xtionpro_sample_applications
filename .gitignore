@@ -37,3 +37,15 @@
 # Exception folders
 xtionpro_sensor_interface/build/
 xtionpro_sensor_save_images/build/
+
+
+# Docs
+*.txt
+
+
+# Figures
+*.png
+*.jpg
+*.jpeg
+*.tiff
+*.gif
