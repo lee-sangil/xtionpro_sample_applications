@@ -16,6 +16,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
+#include <nav_msgs/Odometry.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
@@ -58,13 +59,13 @@ class Communicator{
 			depth_log << "# file" << std::endl;
 			depth_log << "# timestamp filename" << std::endl;
 
-			vicon_log << "# time x y z qx qy qz qw" << std::endl;
+			vicon_log << "# time x y z qx qy qz qw vx vy vz wx wy wz" << std::endl;
 
 			ROS_INFO("file is successfully opened.");
 
 			sub_depth.subscribe( nh_, "/camera/depth/image_rect", 1 );
 			sub_rgb.subscribe( nh_, "/camera/rgb/image_rect_color", 1 );
-			sub_vicon = nh_.subscribe<geometry_msgs::TransformStamped>("/vicon/lsi_asus/lsi_asus", 10, &Communicator::callback_vicon, this);
+			sub_vicon = nh_.subscribe<nav_msgs::Odometry>("/vicon/lsi_asus/lsi_asus", 10, &Communicator::callback_vicon, this);
 
 			sync_.connectInput(sub_rgb, sub_depth);
 			sync_.registerCallback(boost::bind(&Communicator::callback_asus, this, _1, _2));
@@ -79,7 +80,7 @@ class Communicator{
 			ROS_INFO("file is successfully closed.");
 		}
 		void callback_asus(const sensor_msgs::ImageConstPtr& msg_rgb, const sensor_msgs::ImageConstPtr& msg_depth);
-		void callback_vicon(const geometry_msgs::TransformStamped::ConstPtr& msg_vicon);
+		void callback_vicon(const nav_msgs::Odometry::ConstPtr& msg_vicon);
 
 	private:
 		ros::NodeHandle nh_;
@@ -104,7 +105,8 @@ void Communicator::callback_asus(const sensor_msgs::ImageConstPtr& msg_rgb, cons
 	}
 
 	std::stringstream time;
-	time << std::setprecision(6) << std::fixed << msg_rgb->header.stamp;
+	time << std::setprecision(6) << std::fixed << ros::Time::now().toSec();
+
 	cv::Mat color = img_ptr_rgb->image;
 	cv::Mat depth = img_ptr_depth->image*1000;
 	depth.convertTo(depth, CV_16UC1);
@@ -123,20 +125,26 @@ void Communicator::callback_asus(const sensor_msgs::ImageConstPtr& msg_rgb, cons
 	asc_log << time.str() << " rgb/" << time.str() << ".png " << time.str() << " depth/" << time.str() << ".png" << std::endl;
 }
 
-void Communicator::callback_vicon(const geometry_msgs::TransformStamped::ConstPtr& msg_vicon){
+void Communicator::callback_vicon(const nav_msgs::Odometry::ConstPtr& msg_vicon){
 	
 	std::stringstream time;
-	time << std::setprecision(6) << std::fixed << msg_vicon->header.stamp;
+	time << std::setprecision(6) << std::fixed << ros::Time::now().toSec();
 	
 	vicon_log << std::setprecision(10) << std::fixed
 		<< time.str() << '\t'
-		<< msg_vicon->transform.translation.x << '\t'
-		<< msg_vicon->transform.translation.y << '\t'
-		<< msg_vicon->transform.translation.z << '\t'
-		<< msg_vicon->transform.rotation.x << '\t'
-		<< msg_vicon->transform.rotation.y << '\t'
-		<< msg_vicon->transform.rotation.z << '\t'
-		<< msg_vicon->transform.rotation.w << std::endl;
+		<< msg_vicon->pose.pose.position.x << '\t'
+		<< msg_vicon->pose.pose.position.y << '\t'
+		<< msg_vicon->pose.pose.position.z << '\t'
+		<< msg_vicon->pose.pose.orientation.x << '\t'
+		<< msg_vicon->pose.pose.orientation.y << '\t'
+		<< msg_vicon->pose.pose.orientation.z << '\t'
+		<< msg_vicon->pose.pose.orientation.w << '\t'
+		<< msg_vicon->twist.twist.linear.x << '\t'
+		<< msg_vicon->twist.twist.linear.y << '\t'
+		<< msg_vicon->twist.twist.linear.z << '\t'
+		<< msg_vicon->twist.twist.angular.x << '\t'
+		<< msg_vicon->twist.twist.angular.y << '\t'
+		<< msg_vicon->twist.twist.angular.z << std::endl;
 }
 
 int main(int argc, char * argv[]){

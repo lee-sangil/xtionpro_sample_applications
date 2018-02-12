@@ -1,10 +1,10 @@
 SET(PROJECT_NAME xtionpro_sensor_save_images_ros)
-PROJEcT(${PROJECT_NAME})
+PROJECT(${PROJECT_NAME})
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.3)
 
 
 # Find catkin and any catkin packages
-FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp rospy cv_bridge roslib image_transport sensor_msgs std_msgs geometry_msgs message_runtime message_filters)
+FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp rospy cv_bridge roslib image_transport sensor_msgs std_msgs nav_msgs geometry_msgs message_runtime message_filters)
 FIND_PACKAGE(OpenCV REQUIRED)
 FIND_PACKAGE(Boost COMPONENTS system filesystem thread REQUIRED)
 
