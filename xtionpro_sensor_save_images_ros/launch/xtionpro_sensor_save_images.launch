@@ -1,10 +1,15 @@
 <?xml version="1.0"?>
 <launch>
 
+<arg name="rgb" default="/camera/rgb/image_color"/>
+<arg name="depth" default="/camera/depth/image"/>
+<arg name="vicon" default="/vicon/lsi_asus/lsi_asus"/>
+
 <!-- <include file="$(find openni2_launch)/launch/openni2.launch"/> -->
 <node pkg="xtionpro_sensor_save_images_ros" name="xtionpro_sensor_save_images" type="xtionpro_sensor_save_images_ros" output="screen">
-	<remap from="/camera/rgb/image_rect_color" to="/camera/rgb/image_color"/>
-	<remap from="/camera/depth/image_rect" to="/camera/depth/image"/>
+	<remap from="/camera/rgb/image_rect_color" to="$(arg rgb)"/>
+	<remap from="/camera/depth/image_rect" to="$(arg depth)"/>
+	<remap from="/vicon/lsi_asus/lsi_asus" to="$(arg vicon)"/>
 </node>
 
 </launch>
