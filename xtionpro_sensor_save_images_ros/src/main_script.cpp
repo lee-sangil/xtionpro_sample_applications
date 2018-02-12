@@ -1,37 +1,27 @@
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/opencv.hpp>
-
-#include <boost/filesystem.hpp>
-
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <cv_bridge/cv_bridge.h>
-#include <sensor_msgs/Image.h>
-#include <sensor_msgs/image_encodings.h>
-#include <nav_msgs/Odometry.h>
-#include <geometry_msgs/TransformStamped.h>
-#include <message_filters/subscriber.h>
-#include <message_filters/synchronizer.h>
-#include <message_filters/sync_policies/approximate_time.h>
+#include "common.h"
+#include "parser.h"
 
 typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> mySyncPolicy;
 
 class Communicator{
 	public:
 		Communicator():sync_(mySyncPolicy(10)){
-
+			if(Parser::hasOption("-help")){
+				std::cout << "Optional -o: Output folder path (default: ros package location).\n"
+					"Example: rosrun xtionpro_sensor_save_images xtionpro_sensor_save_images -o /path/to/output/" << std::endl;
+			}
+			
 			// Make folders for saving current image
-			std::string pwd = ros::package::getPath("xtionpro_sensor_save_images_ros");
-			folder_name_rgb = pwd + std::string("/dataset/rgb/");
-			folder_name_depth = pwd + std::string("/dataset/depth/");
+			std::string save_loc;
+			if(Parser::hasOption("-o")){
+				save_loc = Parser::getStringOption("-o");
+			}else{
+				std::string pwd = ros::package::getPath("xtionpro_sensor_save_images_ros");
+				save_loc = pwd + "/dataset/";
+			}
+
+			folder_name_rgb = save_loc + "rgb/";
+			folder_name_depth = save_loc + "depth/";
 
 			std::string folder_remove_command;
 			folder_remove_command = "rm -rf " + folder_name_depth;
@@ -46,10 +36,10 @@ class Communicator{
 			system(folder_create_command.c_str());
 
 			// Make rgb and depth filename log
-			rgb_log.open((pwd + std::string("/dataset/rgb.txt")).c_str());
-			depth_log.open((pwd + std::string("/dataset/depth.txt")).c_str());
-			asc_log.open((pwd + std::string("/dataset/associations.txt")).c_str());
-			vicon_log.open((pwd + std::string("/dataset/groundtruth.txt")).c_str());
+			rgb_log.open((save_loc + "rgb.txt").c_str());
+			depth_log.open((save_loc + "depth.txt").c_str());
+			asc_log.open((save_loc + "associations.txt").c_str());
+			vicon_log.open((save_loc + "groundtruth.txt").c_str());
 
 			rgb_log << "# color images" << std::endl;
 			rgb_log << "# file" << std::endl;
@@ -65,7 +55,8 @@ class Communicator{
 
 			sub_depth.subscribe( nh_, "/camera/depth/image_rect", 1 );
 			sub_rgb.subscribe( nh_, "/camera/rgb/image_rect_color", 1 );
-			sub_vicon = nh_.subscribe<nav_msgs::Odometry>("/vicon/lsi_asus/lsi_asus", 10, &Communicator::callback_vicon, this);
+//			sub_vicon = nh_.subscribe<nav_msgs::Odometry>("/vicon/lsi_asus/lsi_asus", 10, &Communicator::callback_vicon, this);
+			sub_vicon = nh_.subscribe<geometry_msgs::TransformStamped>("/vicon/lsi_asus/lsi_asus", 10, &Communicator::callback_vicon, this);
 
 			sync_.connectInput(sub_rgb, sub_depth);
 			sync_.registerCallback(boost::bind(&Communicator::callback_asus, this, _1, _2));
@@ -76,11 +67,13 @@ class Communicator{
 			if( rgb_log.is_open() ) rgb_log.close();
 			if( depth_log.is_open() ) depth_log.close();
 			if( asc_log.is_open() ) asc_log.close();
+			if( vicon_log.is_open() ) vicon_log.close();
 
 			ROS_INFO("file is successfully closed.");
 		}
 		void callback_asus(const sensor_msgs::ImageConstPtr& msg_rgb, const sensor_msgs::ImageConstPtr& msg_depth);
 		void callback_vicon(const nav_msgs::Odometry::ConstPtr& msg_vicon);
+		void callback_vicon(const geometry_msgs::TransformStamped::ConstPtr& msg_vicon);
 
 	private:
 		ros::NodeHandle nh_;
@@ -147,9 +140,27 @@ void Communicator::callback_vicon(const nav_msgs::Odometry::ConstPtr& msg_vicon)
 		<< msg_vicon->twist.twist.angular.z << std::endl;
 }
 
+void Communicator::callback_vicon(const geometry_msgs::TransformStamped::ConstPtr& msg_vicon){
+	
+	std::stringstream time;
+	time << std::setprecision(6) << std::fixed << ros::Time::now().toSec();
+	
+	vicon_log << std::setprecision(10) << std::fixed
+		<< time.str() << '\t'
+		<< msg_vicon->transform.translation.x << '\t'
+		<< msg_vicon->transform.translation.y << '\t'
+		<< msg_vicon->transform.translation.z << '\t'
+		<< msg_vicon->transform.rotation.x << '\t'
+		<< msg_vicon->transform.rotation.y << '\t'
+		<< msg_vicon->transform.rotation.z << '\t'
+		<< msg_vicon->transform.rotation.w << std::endl;
+}
+
 int main(int argc, char * argv[]){
 
 	ros::init(argc, argv, "xtionpro_sensor_save_images");
+	Parser::init(argc, argv);
+
 	Communicator comm_;
 
 	while( ros::ok() ) {
