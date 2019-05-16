@@ -71,7 +71,7 @@ class Communicator{
 
 			ROS_INFO("file is successfully closed.");
 		}
-		void callback_asus(const sensor_msgs::ImageConstPtr& msg_rgb, const sensor_msgs::ImageConstPtr& msg_depth);
+		void callback_asus(const sensor_msgs::Image::ConstPtr& msg_rgb, const sensor_msgs::Image::ConstPtr& msg_depth);
 		void callback_vicon(const nav_msgs::Odometry::ConstPtr& msg_vicon);
 		void callback_vicon(const geometry_msgs::TransformStamped::ConstPtr& msg_vicon);
 
@@ -85,7 +85,7 @@ class Communicator{
 		std::string folder_name_rgb, folder_name_depth;
 };
 
-void Communicator::callback_asus(const sensor_msgs::ImageConstPtr& msg_rgb, const sensor_msgs::ImageConstPtr& msg_depth){
+void Communicator::callback_asus(const sensor_msgs::Image::ConstPtr& msg_rgb, const sensor_msgs::Image::ConstPtr& msg_depth){
 	cv_bridge::CvImagePtr img_ptr_rgb, img_ptr_depth;
 
 	try{
